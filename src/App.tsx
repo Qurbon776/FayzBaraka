@@ -390,12 +390,23 @@ function App() {
       </main>
 
       {cartQuantity > 0 ? (
-        <button type="button" onClick={() => setCartOpen(true)} className="glass-panel glass-soft fixed bottom-4 right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full border border-white/15 bg-[var(--surface-strong)] shadow-glow">
-          <span className="premium-ring flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-emerald-300 to-emerald-100 text-emerald-950">
+        <button type="button" onClick={() => setCartOpen(true)} className="glass-panel glass-soft fixed bottom-4 left-1/2 z-30 flex w-[calc(100%-2rem)] max-w-[310px] -translate-x-1/2 items-center gap-3 rounded-[22px] border border-white/15 bg-[var(--surface-strong)] px-3.5 py-3 shadow-glow">
+          <span className="premium-ring flex h-11 w-11 shrink-0 items-center justify-center rounded-[16px] bg-gradient-to-br from-emerald-300 to-emerald-100 text-emerald-950">
             <ShoppingBag size={18} />
           </span>
-          <span className="absolute -right-1 -top-1 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-emerald-300 px-1 text-[11px] font-bold text-emerald-950">
-            {cartQuantity}
+          <span className="min-w-0 flex-1 text-left">
+            <span className="block text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">
+              {t(language, 'cart')}
+            </span>
+            <span className="mt-1 block text-sm font-semibold leading-none text-[var(--text-primary)]">
+              {cartQuantity} {t(language, 'item')}
+            </span>
+          </span>
+          <span className="text-right">
+            <span className="block text-[11px] uppercase tracking-[0.16em] text-[var(--text-muted)]">
+              {t(language, 'total')}
+            </span>
+            <span className="mt-1 block text-sm font-bold text-[var(--text-primary)]">{cartTotal.toLocaleString(locale)} so‘m</span>
           </span>
         </button>
       ) : null}
