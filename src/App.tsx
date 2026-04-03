@@ -392,16 +392,23 @@ function App() {
       </main>
 
       {cartQuantity > 0 ? (
-        <button type="button" onClick={() => setCartOpen(true)} className="glass-panel glass-soft fixed bottom-4 left-1/2 z-30 flex w-[calc(100%-2rem)] max-w-[252px] -translate-x-1/2 items-center gap-3 rounded-[999px] border border-white/15 bg-[var(--surface-strong)] px-3 py-2.5 shadow-glow">
-          <span className="premium-ring flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-emerald-300 to-emerald-100 text-emerald-950">
-            <ShoppingBag size={16} />
+        <button type="button" onClick={() => setCartOpen(true)} className="glass-panel glass-soft fixed bottom-4 left-1/2 z-30 flex w-[calc(100%-2rem)] max-w-[330px] -translate-x-1/2 items-center gap-3 rounded-[24px] border border-white/15 bg-[var(--surface-strong)] px-3.5 py-3 shadow-glow">
+          <span className="premium-ring flex h-11 w-11 shrink-0 items-center justify-center rounded-[16px] bg-gradient-to-br from-emerald-300 to-emerald-100 text-emerald-950">
+            <ShoppingBag size={18} />
           </span>
           <span className="min-w-0 flex-1 text-left">
-            <span className="block text-[13px] font-semibold leading-none text-[var(--text-primary)]">{cartQuantity} {t(language, 'item')}</span>
-            <span className="mt-1 block text-xs text-[var(--text-secondary)]">{formatPrice(cartTotal, locale)}</span>
+            <span className="block text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--text-muted)]">
+              {t(language, 'cart')}
+            </span>
+            <span className="mt-1 block text-sm font-semibold leading-none text-[var(--text-primary)]">
+              {cartQuantity} {t(language, 'item')}
+            </span>
           </span>
-          <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">
-            {t(language, 'cart')}
+          <span className="text-right">
+            <span className="block text-[11px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
+              {t(language, 'total')}
+            </span>
+            <span className="mt-1 block text-sm font-bold text-[var(--text-primary)]">{formatPrice(cartTotal, locale)}</span>
           </span>
         </button>
       ) : null}
