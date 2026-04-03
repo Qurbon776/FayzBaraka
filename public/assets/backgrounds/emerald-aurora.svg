@@ -1,0 +1,49 @@
+<svg width="1440" height="3200" viewBox="0 0 1440 3200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1440" height="3200" fill="#06160F"/>
+  <g filter="url(#blurA)">
+    <ellipse cx="1152" cy="419" rx="371" ry="291" fill="#79F0BA" fill-opacity="0.34"/>
+  </g>
+  <g filter="url(#blurB)">
+    <ellipse cx="308" cy="773" rx="489" ry="372" fill="#0F8A61" fill-opacity="0.36"/>
+  </g>
+  <g filter="url(#blurC)">
+    <ellipse cx="772" cy="1492" rx="585" ry="426" fill="#CFE7D6" fill-opacity="0.16"/>
+  </g>
+  <g filter="url(#blurD)">
+    <ellipse cx="1097" cy="2061" rx="420" ry="344" fill="#2AD48F" fill-opacity="0.28"/>
+  </g>
+  <g filter="url(#blurE)">
+    <ellipse cx="328" cy="2501" rx="476" ry="372" fill="#0C6A4A" fill-opacity="0.32"/>
+  </g>
+  <g opacity="0.5">
+    <path d="M-87 1119C190 926 330 1018 544 1153C724 1267 870 1327 1118 1196C1244 1129 1345 1069 1516 1104V1448H-87V1119Z" fill="url(#waveA)"/>
+    <path d="M-137 1908C130 1752 330 1790 542 1932C727 2057 892 2146 1136 2035C1260 1979 1383 1916 1574 1961V2242H-137V1908Z" fill="url(#waveB)"/>
+  </g>
+  <defs>
+    <filter id="blurA" x="541" y="-113" width="1222" height="1064" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="120"/>
+    </filter>
+    <filter id="blurB" x="-421" y="161" width="1458" height="1224" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="120"/>
+    </filter>
+    <filter id="blurC" x="-53" y="826" width="1650" height="1332" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="120"/>
+    </filter>
+    <filter id="blurD" x="437" y="1477" width="1320" height="1168" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="120"/>
+    </filter>
+    <filter id="blurE" x="-388" y="1889" width="1432" height="1224" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="120"/>
+    </filter>
+    <linearGradient id="waveA" x1="67" y1="1021" x2="1132" y2="1528" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F4F8F4" stop-opacity="0.17"/>
+      <stop offset="0.52" stop-color="#C4F8DD" stop-opacity="0.08"/>
+      <stop offset="1" stop-color="#E7FFF6" stop-opacity="0.18"/>
+    </linearGradient>
+    <linearGradient id="waveB" x1="-32" y1="1805" x2="1159" y2="2324" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F3FFF7" stop-opacity="0.1"/>
+      <stop offset="0.5" stop-color="#A4F1CB" stop-opacity="0.06"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.13"/>
+    </linearGradient>
+  </defs>
+</svg>

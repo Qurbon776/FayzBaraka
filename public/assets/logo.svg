@@ -1,0 +1,24 @@
+<svg width="420" height="140" viewBox="0 0 420 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="1" y="1" width="418" height="138" rx="30" fill="url(#bg)" stroke="url(#stroke)" stroke-width="2"/>
+  <path d="M79 100V42H131V52H91V68H127V78H91V100H79Z" fill="#E8DCC2"/>
+  <path d="M150 100L173 42H185L208 100H196L190.5 86H167.5L162 100H150ZM171 76H187L179.2 56.2L171 76Z" fill="#E8DCC2"/>
+  <path d="M225 100V42H237L260 81.6V42H271V100H259L236 60.4V100H225Z" fill="#E8DCC2"/>
+  <path d="M287 100V42H299V89.2H337V100H287Z" fill="#E8DCC2"/>
+  <path d="M78 118H339" stroke="url(#line)" stroke-width="2" stroke-linecap="round"/>
+  <text x="210" y="31" text-anchor="middle" fill="#9DD1B6" font-family="Cormorant Garamond, serif" font-size="20" letter-spacing="7">FAYZ BARAKA</text>
+  <defs>
+    <linearGradient id="bg" x1="40" y1="14" x2="382" y2="132" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0E3A2A"/>
+      <stop offset="1" stop-color="#072117"/>
+    </linearGradient>
+    <linearGradient id="stroke" x1="35" y1="0" x2="385" y2="140" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6BA883" stop-opacity="0.8"/>
+      <stop offset="1" stop-color="#F2E5C8" stop-opacity="0.22"/>
+    </linearGradient>
+    <linearGradient id="line" x1="78" y1="118.5" x2="339" y2="118.5" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#275E49"/>
+      <stop offset="0.5" stop-color="#DCC8A6"/>
+      <stop offset="1" stop-color="#275E49"/>
+    </linearGradient>
+  </defs>
+</svg>
