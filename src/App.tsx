@@ -361,6 +361,28 @@ function App() {
           </div>
         </header>
 
+        {cartQuantity > 0 ? (
+          <div className="mt-4 flex justify-start">
+            <button
+              type="button"
+              onClick={() => setCartOpen(true)}
+              className="glass-panel glass-soft flex items-center gap-3 rounded-[20px] border border-white/15 bg-[var(--surface-strong)] px-3.5 py-3 shadow-soft"
+            >
+              <span className="premium-ring flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] bg-gradient-to-br from-emerald-300 to-emerald-100 text-emerald-950">
+                <ShoppingBag size={17} />
+              </span>
+              <span className="min-w-0 text-left">
+                <span className="block text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">
+                  {t(language, 'cart')}
+                </span>
+                <span className="mt-1 block text-sm font-semibold leading-none text-[var(--text-primary)]">
+                  {cartQuantity} {t(language, 'item')}
+                </span>
+              </span>
+            </button>
+          </div>
+        ) : null}
+
         <section className="mt-6 flex items-center justify-between gap-3">
           <div>
             <p className="text-xs uppercase tracking-[0.28em] text-[var(--text-muted)]">{t(language, 'search')}</p>
@@ -388,28 +410,6 @@ function App() {
           </section>
         ) : null}
       </main>
-
-      {cartQuantity > 0 ? (
-        <button type="button" onClick={() => setCartOpen(true)} className="glass-panel glass-soft fixed bottom-4 left-1/2 z-30 flex w-[calc(100%-2rem)] max-w-[320px] -translate-x-1/2 items-center gap-3 rounded-[24px] border border-white/15 bg-[var(--surface-strong)] px-3.5 py-3 shadow-glow">
-          <span className="premium-ring flex h-11 w-11 shrink-0 items-center justify-center rounded-[16px] bg-gradient-to-br from-emerald-300 to-emerald-100 text-emerald-950">
-            <ShoppingBag size={18} />
-          </span>
-          <span className="min-w-0 flex-1 text-left">
-            <span className="block text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">
-              {t(language, 'cart')}
-            </span>
-            <span className="mt-1 block text-sm font-semibold leading-none text-[var(--text-primary)]">
-              {cartQuantity} {t(language, 'item')}
-            </span>
-          </span>
-          <span className="text-right">
-            <span className="block text-[11px] uppercase tracking-[0.16em] text-[var(--text-muted)]">
-              {t(language, 'total')}
-            </span>
-            <span className="mt-1 block text-sm font-bold text-[var(--text-primary)]">{cartTotal.toLocaleString(locale)} so‘m</span>
-          </span>
-        </button>
-      ) : null}
 
       {cartQuantity > 0 ? (
         <CartSheet cart={cart} products={products} language={language} locale={locale} open={cartOpen} onClose={() => setCartOpen(false)} onCheckout={() => setCheckoutOpen(true)} onQuantityChange={handleQuantityChange} />
