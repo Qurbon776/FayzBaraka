@@ -390,7 +390,7 @@ function App() {
       </main>
 
       {cartQuantity > 0 ? (
-        <button type="button" onClick={() => setCartOpen(true)} className="glass-panel glass-soft fixed bottom-4 left-1/2 z-30 flex w-[calc(100%-2rem)] max-w-[310px] -translate-x-1/2 items-center gap-3 rounded-[22px] border border-white/15 bg-[var(--surface-strong)] px-3.5 py-3 shadow-glow">
+        <button type="button" onClick={() => setCartOpen(true)} className="glass-panel glass-soft fixed bottom-4 left-1/2 z-30 flex w-[calc(100%-2rem)] max-w-[320px] -translate-x-1/2 items-center gap-3 rounded-[24px] border border-white/15 bg-[var(--surface-strong)] px-3.5 py-3 shadow-glow">
           <span className="premium-ring flex h-11 w-11 shrink-0 items-center justify-center rounded-[16px] bg-gradient-to-br from-emerald-300 to-emerald-100 text-emerald-950">
             <ShoppingBag size={18} />
           </span>
