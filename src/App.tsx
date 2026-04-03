@@ -331,9 +331,24 @@ function App() {
               <BrandLogo className="mx-auto h-auto w-[170px] max-w-full" />
             </button>
 
-            <button type="button" onClick={() => setThemeMode((current) => (current === 'dark' ? 'light' : 'dark'))} className="premium-ring inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-[var(--text-primary)]">
-              {themeMode === 'dark' ? <SunMedium size={16} /> : <MoonStar size={16} />}
-            </button>
+            <div className="flex items-center gap-2">
+              {cartQuantity > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => setCartOpen(true)}
+                  className="premium-ring inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-2 text-sm font-semibold text-[var(--text-primary)]"
+                >
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-emerald-300 to-emerald-100 text-emerald-950">
+                    <ShoppingBag size={14} />
+                  </span>
+                  <span className="hidden sm:inline">{cartQuantity}</span>
+                </button>
+              ) : null}
+
+              <button type="button" onClick={() => setThemeMode((current) => (current === 'dark' ? 'light' : 'dark'))} className="premium-ring inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-[var(--text-primary)]">
+                {themeMode === 'dark' ? <SunMedium size={16} /> : <MoonStar size={16} />}
+              </button>
+            </div>
           </div>
 
           <div className="glass-panel mt-5 overflow-hidden rounded-[34px] border border-white/10 bg-black/10 p-5">
@@ -360,28 +375,6 @@ function App() {
             </div>
           </div>
         </header>
-
-        {cartQuantity > 0 ? (
-          <div className="mt-4 flex justify-start">
-            <button
-              type="button"
-              onClick={() => setCartOpen(true)}
-              className="glass-panel glass-soft flex items-center gap-3 rounded-[20px] border border-white/15 bg-[var(--surface-strong)] px-3.5 py-3 shadow-soft"
-            >
-              <span className="premium-ring flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] bg-gradient-to-br from-emerald-300 to-emerald-100 text-emerald-950">
-                <ShoppingBag size={17} />
-              </span>
-              <span className="min-w-0 text-left">
-                <span className="block text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">
-                  {t(language, 'cart')}
-                </span>
-                <span className="mt-1 block text-sm font-semibold leading-none text-[var(--text-primary)]">
-                  {cartQuantity} {t(language, 'item')}
-                </span>
-              </span>
-            </button>
-          </div>
-        ) : null}
 
         <section className="mt-6 flex items-center justify-between gap-3">
           <div>
