@@ -111,4 +111,35 @@ export const defaultProducts: Product[] = [
     stock: 12,
     discount: 8,
   },
+  {
+    id: 'anti-stress-tasbeh',
+    name: {
+      uz: 'Antistress tasbeh',
+      ru: 'Антистресс перекидные чётки',
+    },
+    description: {
+      uz: 'Uslubli dizayndagi, qo‘lni band qiluvchi va tinchlantiruvchi antistress tasbeh.',
+      ru: 'Стильные антистресс-перекидные чётки, которые успокаивают и увлекают.',
+    },
+    price: 79000,
+    image: '/assets/products/tasbeh-1.webp',
+    images: [
+      '/assets/products/tasbeh-1.webp',
+      '/assets/products/tasbeh-2.webp',
+      '/assets/products/tasbeh-3.webp',
+      '/assets/products/tasbeh-4.webp'
+    ],
+    category: 'toys',
+    stock: 15,
+    discount: 5,
+  },
 ];
+
+export const productMediaById: Record<string, string[]> = {
+  'anti-stress-tasbeh': [
+    '/assets/products/tasbeh-1.webp',
+    '/assets/products/tasbeh-2.webp',
+    '/assets/products/tasbeh-3.webp',
+    '/assets/products/tasbeh-4.webp',
+  ],
+};

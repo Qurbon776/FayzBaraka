@@ -5,7 +5,7 @@ import { BrandLogo } from './components/BrandLogo';
 import { CartSheet } from './components/CartSheet';
 import { CheckoutModal } from './components/CheckoutModal';
 import { ProductCard } from './components/ProductCard';
-import { defaultCategories, defaultProducts } from './data/defaults';
+import { defaultCategories, defaultProducts, productMediaById } from './data/defaults';
 import { api } from './lib/api';
 import { loadLanguage, saveLanguage } from './lib/storage';
 import { t } from './lib/i18n';
@@ -37,6 +37,18 @@ const initialCheckout: CheckoutForm = {
   location: null,
   notes: '',
 };
+
+const withLocalMedia = (products: Product[]) =>
+  products.map((product) => {
+    const images = product.images?.length ? product.images : productMediaById[product.id];
+    return images?.length
+      ? {
+          ...product,
+          image: product.image || images[0],
+          images,
+        }
+      : product;
+  });
 
 function App() {
   const { telegram, theme: telegramTheme, user, initData, isTelegram } = useTelegram();
@@ -78,11 +90,11 @@ function App() {
       try {
         const store = await api.getStore();
         setCategories(store.categories);
-        setProducts(store.products);
+        setProducts(withLocalMedia(store.products));
         setDraftProduct(createEmptyProduct(store.categories.length ? store.categories : defaultCategories));
       } catch {
         setCategories(defaultCategories);
-        setProducts(defaultProducts);
+        setProducts(withLocalMedia(defaultProducts));
         setDraftProduct(createEmptyProduct(defaultCategories));
       } finally {
         setLoadingStore(false);

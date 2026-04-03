@@ -13,6 +13,7 @@ export interface Product {
   description: Record<Language, string>;
   price: number;
   image: string;
+  images?: string[];
   category: CategoryId;
   stock: number;
   discount?: number;

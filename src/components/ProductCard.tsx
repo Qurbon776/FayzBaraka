@@ -16,6 +16,7 @@ export function ProductCard({
   product,
   onAddToCart,
 }: ProductCardProps) {
+  const gallery = product.images?.length ? product.images : [product.image];
   const finalPrice = product.discount
     ? Math.round(product.price * (1 - product.discount / 100))
     : product.price;
@@ -26,7 +27,7 @@ export function ProductCard({
       <div className="absolute -right-8 top-8 h-24 w-24 rounded-full bg-white/10 blur-2xl transition duration-500 group-hover:scale-125" />
       <div className="relative overflow-hidden rounded-[24px] border border-white/10 bg-black/5">
         <img
-          src={product.image}
+          src={gallery[0]}
           alt={product.name[language]}
           className="h-48 w-full object-cover transition duration-500 group-hover:scale-105"
           loading="lazy"
@@ -41,6 +42,19 @@ export function ProductCard({
       </div>
 
       <div className="relative space-y-4 px-1 pb-1 pt-4">
+        {gallery.length > 1 ? (
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {gallery.slice(0, 4).map((image, index) => (
+              <img
+                key={`${product.id}-${index}`}
+                src={image}
+                alt={`${product.name[language]} ${index + 1}`}
+                className="h-12 w-12 shrink-0 rounded-xl border border-white/10 object-cover"
+                loading="lazy"
+              />
+            ))}
+          </div>
+        ) : null}
         <div className="space-y-2">
           <div className="flex items-start justify-between gap-3">
             <h3 className="font-display text-2xl font-semibold leading-none text-[var(--text-primary)]">
