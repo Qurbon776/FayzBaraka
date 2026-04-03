@@ -40,3 +40,23 @@ export interface CheckoutForm {
 export interface TranslationGroup {
   [key: string]: Record<Language, string>;
 }
+
+export interface Order {
+  id: string;
+  brand: string;
+  customer: {
+    id: number | null;
+    name: string;
+    username: string | null;
+  };
+  checkout: CheckoutForm;
+  items: Array<{
+    productId: string;
+    name: string;
+    quantity: number;
+    unitPrice: number;
+  }>;
+  total: number;
+  createdAt?: string;
+  created_at?: string;
+}

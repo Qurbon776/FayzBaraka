@@ -5,3 +5,8 @@ dist/
 *.tsbuildinfo
 vite.config.js
 vite.config.d.ts
+public/uploads/
+server/data/db.json
+
+.vercel
+.env*.local

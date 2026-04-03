@@ -7,6 +7,9 @@
   --bg-main: #071b13;
   --surface: rgba(255, 255, 255, 0.08);
   --surface-strong: rgba(255, 255, 255, 0.12);
+  --glass-border: rgba(255, 255, 255, 0.16);
+  --glass-highlight: rgba(255, 255, 255, 0.22);
+  --glass-shadow: rgba(2, 10, 7, 0.28);
   --text-primary: #f5edd9;
   --text-secondary: rgba(232, 225, 208, 0.72);
   --text-muted: rgba(220, 212, 194, 0.45);
@@ -17,6 +20,9 @@
   --bg-main: #eef6ef;
   --surface: rgba(255, 255, 255, 0.34);
   --surface-strong: rgba(255, 255, 255, 0.46);
+  --glass-border: rgba(255, 255, 255, 0.54);
+  --glass-highlight: rgba(255, 255, 255, 0.8);
+  --glass-shadow: rgba(18, 46, 35, 0.1);
   --text-primary: #163626;
   --text-secondary: rgba(22, 54, 38, 0.72);
   --text-muted: rgba(22, 54, 38, 0.42);
@@ -40,6 +46,7 @@ body {
     url('/assets/backgrounds/emerald-aurora.svg') center top / cover no-repeat fixed;
   background-color: var(--bg-main);
   color: var(--text-primary);
+  overflow-x: hidden;
 }
 
 img {
@@ -82,8 +89,11 @@ select {
   backdrop-filter: blur(26px) saturate(180%);
   -webkit-backdrop-filter: blur(26px) saturate(180%);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.18),
-    0 20px 60px rgba(3, 12, 8, 0.18);
+    inset 0 1px 0 var(--glass-highlight),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.03),
+    0 20px 60px var(--glass-shadow);
+  position: relative;
+  isolation: isolate;
 }
 
 .glass-soft {
@@ -94,4 +104,41 @@ select {
 [data-theme='light'] .glass-soft {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.24));
+}
+
+.glass-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid var(--glass-border);
+  pointer-events: none;
+}
+
+.glass-panel::after {
+  content: '';
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  top: 0;
+  height: 44%;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0));
+  opacity: 0.42;
+  pointer-events: none;
+  filter: blur(10px);
+}
+
+.liquid-orb {
+  position: fixed;
+  border-radius: 999px;
+  filter: blur(70px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.premium-ring {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.26),
+    0 8px 30px rgba(0, 0, 0, 0.12);
 }

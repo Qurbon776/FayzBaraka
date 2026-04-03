@@ -22,7 +22,7 @@ export const defaultProducts: Product[] = [
     id: 'emerald-truffles',
     name: {
       uz: 'Emerald truffle to‘plami',
-      ru: 'Набор Emerald truffle',
+      ru: 'Набор Emerald Truffle',
     },
     description: {
       uz: 'Pista, qora shokolad va oltin bezakli premium qo‘lbola truffle.',

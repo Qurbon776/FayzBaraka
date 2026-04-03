@@ -12,6 +12,7 @@ interface CheckoutModalProps {
   isTelegram: boolean;
   form: CheckoutForm;
   requestingLocation: boolean;
+  submitDisabled: boolean;
   onClose: () => void;
   onChange: (patch: Partial<CheckoutForm>) => void;
   onRequestLocation: () => void;
@@ -27,6 +28,7 @@ export function CheckoutModal({
   isTelegram,
   form,
   requestingLocation,
+  submitDisabled,
   onClose,
   onChange,
   onRequestLocation,
@@ -59,6 +61,9 @@ export function CheckoutModal({
         </div>
 
         <div className="grid gap-4">
+          <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-[var(--text-secondary)]">
+            {t(language, 'checkoutHint')}
+          </div>
           <label className="space-y-2">
             <span className="text-sm font-medium text-[var(--text-secondary)]">{t(language, 'phone')}</span>
             <input
@@ -140,7 +145,8 @@ export function CheckoutModal({
           <button
             type="button"
             onClick={onSubmit}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-emerald-400 to-emerald-200 px-5 py-4 text-sm font-extrabold text-emerald-950 transition hover:scale-[1.01] active:scale-95"
+            disabled={submitDisabled}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-emerald-400 to-emerald-200 px-5 py-4 text-sm font-extrabold text-emerald-950 transition hover:scale-[1.01] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <SendHorizonal size={16} />
             {t(language, 'submitOrder')}

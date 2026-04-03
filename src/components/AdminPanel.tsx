@@ -1,13 +1,16 @@
 import { Edit3, PackagePlus, ShieldCheck, Trash2, X } from 'lucide-react';
 import { t } from '../lib/i18n';
-import type { Category, Language, Product } from '../types';
+import { formatPrice } from '../lib/format';
+import type { Category, Language, Order, Product } from '../types';
 
 interface AdminPanelProps {
   open: boolean;
   hasAccess: boolean;
   language: Language;
+  locale: string;
   categories: Category[];
   products: Product[];
+  orders: Order[];
   draftProduct: Product;
   draftCategory: Category;
   editingId: string | null;
@@ -26,8 +29,10 @@ export function AdminPanel({
   open,
   hasAccess,
   language,
+  locale,
   categories,
   products,
+  orders,
   draftProduct,
   draftCategory,
   editingId,
@@ -151,6 +156,53 @@ export function AdminPanel({
                       </div>
                     </div>
                   ))}
+                </div>
+              </div>
+
+              <div className="glass-panel rounded-[30px] border border-white/10 bg-black/10 p-5">
+                <h3 className="mb-4 font-display text-3xl text-[var(--text-primary)]">{t(language, 'adminOrders')}</h3>
+                <div className="space-y-3">
+                  {orders.length === 0 ? (
+                    <div className="rounded-2xl bg-white/5 px-4 py-5 text-sm text-[var(--text-secondary)]">
+                      {t(language, 'emptyOrders')}
+                    </div>
+                  ) : (
+                    orders.map((order) => (
+                      <div key={order.id} className="rounded-[24px] border border-white/10 bg-white/5 p-4">
+                        <div className="flex items-start justify-between gap-4">
+                          <div>
+                            <p className="text-xs uppercase tracking-[0.24em] text-[var(--text-muted)]">{t(language, 'customer')}</p>
+                            <p className="mt-1 font-semibold text-[var(--text-primary)]">
+                              {order.customer.name || '@' + (order.customer.username || 'telegram')}
+                            </p>
+                            <p className="text-sm text-[var(--text-secondary)]">
+                              {order.customer.username ? `@${order.customer.username}` : order.checkout.phone}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-xs uppercase tracking-[0.24em] text-[var(--text-muted)]">{t(language, 'createdAt')}</p>
+                            <p className="mt-1 text-sm text-[var(--text-secondary)]">
+                              {new Date(order.createdAt || order.created_at || Date.now()).toLocaleString(locale)}
+                            </p>
+                            <p className="mt-2 font-bold text-[var(--text-primary)]">{formatPrice(order.total, locale)}</p>
+                          </div>
+                        </div>
+
+                        <div className="mt-4 space-y-2">
+                          {order.items.map((item) => (
+                            <div key={`${order.id}-${item.productId}`} className="flex items-center justify-between gap-3 text-sm">
+                              <span className="text-[var(--text-secondary)]">
+                                {item.name} x {item.quantity}
+                              </span>
+                              <span className="font-semibold text-[var(--text-primary)]">
+                                {formatPrice(item.unitPrice * item.quantity, locale)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </div>

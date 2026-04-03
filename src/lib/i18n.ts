@@ -17,6 +17,10 @@ export const translations: TranslationGroup = {
     uz: 'Savat',
     ru: 'Корзина',
   },
+  item: {
+    uz: 'mahsulot',
+    ru: 'товар',
+  },
   addToCart: {
     uz: 'Savatga qo‘shish',
     ru: 'В корзину',
@@ -168,6 +172,46 @@ export const translations: TranslationGroup = {
   results: {
     uz: 'ta mahsulot',
     ru: 'товаров',
+  },
+  loading: {
+    uz: 'Yuklanmoqda',
+    ru: 'Загрузка',
+  },
+  adminOrders: {
+    uz: 'Buyurtmalar',
+    ru: 'Заказы',
+  },
+  emptyOrders: {
+    uz: 'Hozircha buyurtmalar yo‘q',
+    ru: 'Пока заказов нет',
+  },
+  customer: {
+    uz: 'Mijoz',
+    ru: 'Клиент',
+  },
+  createdAt: {
+    uz: 'Sana',
+    ru: 'Дата',
+  },
+  noResultsTitle: {
+    uz: 'Hech narsa topilmadi',
+    ru: 'Ничего не найдено',
+  },
+  noResultsText: {
+    uz: 'Boshqa kalit so‘z bilan qidirib ko‘ring yoki matnni tozalang.',
+    ru: 'Попробуйте другой запрос или очистите поиск.',
+  },
+  checkoutHint: {
+    uz: 'Buyurtma yuborishdan oldin aloqa ma’lumotlarini to‘ldiring.',
+    ru: 'Перед отправкой заполните контактные данные.',
+  },
+  phoneRequired: {
+    uz: 'Telefon raqamini kiriting.',
+    ru: 'Введите номер телефона.',
+  },
+  locationRequired: {
+    uz: 'Yetkazib berish uchun joylashuvni yuboring.',
+    ru: 'Для доставки отправьте локацию.',
   },
 };
 

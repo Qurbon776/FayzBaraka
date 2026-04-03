@@ -17,6 +17,7 @@ type LocationData = {
 
 type TelegramWebApp = {
   colorScheme?: ThemeMode;
+  initData?: string;
   initDataUnsafe?: {
     user?: WebAppUser;
   };
@@ -76,6 +77,7 @@ export const useTelegram = () => {
   return {
     telegram,
     theme,
+    initData: telegram?.initData ?? '',
     user: telegram?.initDataUnsafe?.user,
     isTelegram: Boolean(telegram),
   };

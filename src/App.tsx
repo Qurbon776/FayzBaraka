@@ -5,11 +5,13 @@ import { BrandLogo } from './components/BrandLogo';
 import { CartSheet } from './components/CartSheet';
 import { CheckoutModal } from './components/CheckoutModal';
 import { ProductCard } from './components/ProductCard';
-import { loadCategories, loadLanguage, loadProducts, saveCategories, saveLanguage, saveProducts } from './lib/storage';
+import { defaultCategories, defaultProducts } from './data/defaults';
+import { api } from './lib/api';
+import { loadLanguage, saveLanguage } from './lib/storage';
 import { t } from './lib/i18n';
 import { formatPrice } from './lib/format';
 import { requestTelegramLocation, useTelegram } from './lib/telegram';
-import type { CartItem, Category, CheckoutForm, Language, Product, ThemeMode } from './types';
+import type { CartItem, Category, CheckoutForm, Language, Order, Product, ThemeMode } from './types';
 
 const adminIds = import.meta.env.VITE_ADMIN_IDS?.split(',')
   .map((value: string) => Number(value.trim()))
@@ -38,11 +40,12 @@ const initialCheckout: CheckoutForm = {
 };
 
 function App() {
-  const { telegram, theme: telegramTheme, user, isTelegram } = useTelegram();
+  const { telegram, theme: telegramTheme, user, initData, isTelegram } = useTelegram();
   const [language, setLanguage] = useState<Language>(loadLanguage());
   const [themeMode, setThemeMode] = useState<ThemeMode>(telegramTheme);
-  const [categories, setCategories] = useState<Category[]>(loadCategories());
-  const [products, setProducts] = useState<Product[]>(loadProducts());
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [search, setSearch] = useState('');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
@@ -50,9 +53,10 @@ function App() {
   const [checkoutForm, setCheckoutForm] = useState<CheckoutForm>(initialCheckout);
   const [requestingLocation, setRequestingLocation] = useState(false);
   const [isSplashVisible, setIsSplashVisible] = useState(true);
+  const [loadingStore, setLoadingStore] = useState(true);
   const [adminOpen, setAdminOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [draftProduct, setDraftProduct] = useState<Product>(createEmptyProduct(categories));
+  const [draftProduct, setDraftProduct] = useState<Product>(createEmptyProduct(defaultCategories));
   const [draftCategory, setDraftCategory] = useState<Category>(createEmptyCategory());
   const adminTapCountRef = useRef(0);
 
@@ -70,15 +74,36 @@ function App() {
   }, [language]);
 
   useEffect(() => {
-    saveCategories(categories);
-  }, [categories]);
+    const loadStore = async () => {
+      setLoadingStore(true);
+      try {
+        const store = await api.getStore();
+        setCategories(store.categories);
+        setProducts(store.products);
+        setDraftProduct(createEmptyProduct(store.categories.length ? store.categories : defaultCategories));
+      } catch {
+        setCategories(defaultCategories);
+        setProducts(defaultProducts);
+        setDraftProduct(createEmptyProduct(defaultCategories));
+      } finally {
+        setLoadingStore(false);
+      }
+    };
 
-  useEffect(() => {
-    saveProducts(products);
-  }, [products]);
+    loadStore();
+  }, []);
 
   const locale = language === 'uz' ? 'uz-UZ' : 'ru-RU';
   const hasAdminAccess = user ? adminIds.includes(user.id) : false;
+
+  useEffect(() => {
+    if (!adminOpen || !hasAdminAccess) return;
+
+    api
+      .getOrders(user?.id, initData)
+      .then((response) => setOrders(response.orders))
+      .catch(() => setOrders([]));
+  }, [adminOpen, hasAdminAccess, initData, user?.id]);
 
   const filteredProducts = useMemo(() => {
     const query = search.toLowerCase().trim();
@@ -101,6 +126,12 @@ function App() {
     return sum + finalPrice * item.quantity;
   }, 0);
 
+  useEffect(() => {
+    if (cartQuantity === 0) {
+      setCartOpen(false);
+    }
+  }, [cartQuantity]);
+
   const handleAddToCart = (productId: string) => {
     telegram?.HapticFeedback?.impactOccurred?.('light');
     setCart((current) => {
@@ -116,6 +147,7 @@ function App() {
       }
       return [...current, { productId, quantity: 1 }];
     });
+    setCartOpen(true);
   };
 
   const handleQuantityChange = (productId: string, nextQuantity: number) => {
@@ -145,7 +177,17 @@ function App() {
     telegram?.showAlert?.('Location access is unavailable.');
   };
 
-  const handleSubmitOrder = () => {
+  const handleSubmitOrder = async () => {
+    if (!checkoutForm.phone.trim()) {
+      telegram?.showAlert?.(t(language, 'phoneRequired')) ?? window.alert(t(language, 'phoneRequired'));
+      return;
+    }
+
+    if (checkoutForm.deliveryType === 'delivery' && !checkoutForm.location) {
+      telegram?.showAlert?.(t(language, 'locationRequired')) ?? window.alert(t(language, 'locationRequired'));
+      return;
+    }
+
     const items = cart.map((item) => {
       const product = products.find((entry) => entry.id === item.productId);
       const price = product ? (product.discount ? Math.round(product.price * (1 - product.discount / 100)) : product.price) : 0;
@@ -170,20 +212,26 @@ function App() {
       createdAt: new Date().toISOString(),
     };
 
-    if (telegram?.sendData) {
-      telegram.sendData(JSON.stringify(payload));
-      telegram.HapticFeedback?.notificationOccurred?.('success');
-    } else {
-      window.alert(`${t(language, 'orderFallback')}\n\n${JSON.stringify(payload, null, 2)}`);
-    }
+    try {
+      await api.createOrder(payload);
+      if (telegram?.sendData) {
+        telegram.sendData(JSON.stringify(payload));
+        telegram.HapticFeedback?.notificationOccurred?.('success');
+      } else {
+        window.alert(`${t(language, 'orderFallback')}\n\n${JSON.stringify(payload, null, 2)}`);
+      }
 
-    setCart([]);
-    setCheckoutForm(initialCheckout);
-    setCheckoutOpen(false);
-    setCartOpen(false);
+      setCart([]);
+      setCheckoutForm(initialCheckout);
+      setCheckoutOpen(false);
+      setCartOpen(false);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Order failed.';
+      telegram?.showAlert?.(message) ?? window.alert(message);
+    }
   };
 
-  const handleSaveProduct = () => {
+  const handleSaveProduct = async () => {
     const normalized: Product = {
       ...draftProduct,
       id: editingId ?? draftProduct.id ?? crypto.randomUUID(),
@@ -191,24 +239,45 @@ function App() {
     };
 
     if (!normalized.name.uz || !normalized.name.ru || !normalized.image) return;
-    setProducts((current) => {
-      const exists = current.some((item) => item.id === normalized.id);
-      return exists ? current.map((item) => (item.id === normalized.id ? normalized : item)) : [normalized, ...current];
-    });
-    setEditingId(null);
-    setDraftProduct(createEmptyProduct(categories));
+    try {
+      const exists = products.some((item) => item.id === normalized.id);
+      if (exists) {
+        await api.updateProduct(normalized.id, normalized, user?.id, initData);
+        setProducts((current) => current.map((item) => (item.id === normalized.id ? normalized : item)));
+      } else {
+        await api.createProduct(normalized, user?.id, initData);
+        setProducts((current) => [normalized, ...current]);
+      }
+      setEditingId(null);
+      setDraftProduct(createEmptyProduct(categories));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Save failed.';
+      telegram?.showAlert?.(message) ?? window.alert(message);
+    }
   };
 
-  const handleSaveCategory = () => {
+  const handleSaveCategory = async () => {
     if (!draftCategory.id || !draftCategory.name.uz || !draftCategory.name.ru) return;
     if (categories.some((category) => category.id === draftCategory.id)) return;
-    setCategories((current) => [...current, draftCategory]);
-    setDraftCategory(createEmptyCategory());
+    try {
+      await api.createCategory(draftCategory, user?.id, initData);
+      setCategories((current) => [...current, draftCategory]);
+      setDraftCategory(createEmptyCategory());
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Category save failed.';
+      telegram?.showAlert?.(message) ?? window.alert(message);
+    }
   };
 
-  const handleDeleteCategory = (id: string) => {
-    setCategories((current) => current.filter((category) => category.id !== id));
-    setProducts((current) => current.filter((product) => product.category !== id));
+  const handleDeleteCategory = async (id: string) => {
+    try {
+      await api.deleteCategory(id, user?.id, initData);
+      setCategories((current) => current.filter((category) => category.id !== id));
+      setProducts((current) => current.filter((product) => product.category !== id));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Delete failed.';
+      telegram?.showAlert?.(message) ?? window.alert(message);
+    }
   };
 
   const handleEditProduct = (product: Product) => {
@@ -216,16 +285,15 @@ function App() {
     setDraftProduct(product);
   };
 
-  const handleImageUpload = (file: File | null) => {
+  const handleImageUpload = async (file: File | null) => {
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const imageData = reader.result;
-      if (typeof imageData === 'string') {
-        setDraftProduct((current) => ({ ...current, image: imageData }));
-      }
-    };
-    reader.readAsDataURL(file);
+    try {
+      const uploaded = await api.uploadImage(file, user?.id, initData);
+      setDraftProduct((current) => ({ ...current, image: uploaded.url }));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Upload failed.';
+      telegram?.showAlert?.(message) ?? window.alert(message);
+    }
   };
 
   const revealAdmin = () => {
@@ -248,12 +316,15 @@ function App() {
       ) : null}
 
       <div className="fixed inset-0 -z-10 bg-emerald-mesh opacity-90" />
-      <div className="fixed left-1/2 top-0 -z-10 h-80 w-80 -translate-x-1/2 rounded-full bg-emerald-300/10 blur-3xl" />
+      <div className="liquid-orb left-[-5rem] top-24 h-56 w-56 bg-emerald-200/12" />
+      <div className="liquid-orb right-[-3rem] top-40 h-72 w-72 bg-white/8" />
+      <div className="liquid-orb left-1/2 top-0 h-80 w-80 -translate-x-1/2 bg-emerald-300/10" />
+      <div className="liquid-orb bottom-20 right-[-4rem] h-64 w-64 bg-teal-200/10" />
 
       <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 pb-32 pt-4 sm:px-5">
         <header className="glass-panel glass-soft rounded-[32px] border border-white/15 bg-[var(--surface)] p-4 shadow-soft">
           <div className="flex items-center justify-between gap-3">
-            <button type="button" onClick={() => setLanguage((current) => (current === 'uz' ? 'ru' : 'uz'))} className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-[var(--text-primary)]">
+            <button type="button" onClick={() => setLanguage((current) => (current === 'uz' ? 'ru' : 'uz'))} className="premium-ring inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-[var(--text-primary)]">
               <Globe2 size={16} />
               {language.toUpperCase()}
             </button>
@@ -262,28 +333,29 @@ function App() {
               <BrandLogo className="mx-auto h-auto w-[170px] max-w-full" />
             </button>
 
-            <button type="button" onClick={() => setThemeMode((current) => (current === 'dark' ? 'light' : 'dark'))} className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-[var(--text-primary)]">
+            <button type="button" onClick={() => setThemeMode((current) => (current === 'dark' ? 'light' : 'dark'))} className="premium-ring inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-[var(--text-primary)]">
               {themeMode === 'dark' ? <SunMedium size={16} /> : <MoonStar size={16} />}
             </button>
           </div>
 
-          <div className="glass-panel rounded-[30px] border border-white/10 bg-black/10 p-5">
-            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200/15 bg-emerald-300/10 px-3 py-1 text-xs uppercase tracking-[0.28em] text-emerald-100/80">
+          <div className="glass-panel mt-5 overflow-hidden rounded-[34px] border border-white/10 bg-black/10 p-5">
+            <div className="absolute inset-x-12 top-0 h-24 rounded-full bg-white/10 blur-3xl" />
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200/20 bg-emerald-300/12 px-3 py-1 text-xs uppercase tracking-[0.28em] text-emerald-100/80">
               <Sparkles size={12} />
               {t(language, 'heroBadge')}
             </div>
-            <h1 className="mt-4 max-w-xl font-display text-5xl leading-tight text-[var(--text-primary)]">{t(language, 'heroTitle')}</h1>
+            <h1 className="mt-4 max-w-2xl font-display text-[2.85rem] leading-[0.95] text-[var(--text-primary)] sm:text-[3.4rem]">{t(language, 'heroTitle')}</h1>
             <p className="mt-3 max-w-xl text-sm leading-7 text-[var(--text-secondary)]">{t(language, 'heroText')}</p>
 
-            <div className="mt-5 flex flex-wrap items-center gap-3">
-              <div className="glass-panel min-w-[220px] flex-1 rounded-[28px] border border-white/10 bg-white/5 px-4 py-4">
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <div className="glass-panel min-w-[220px] flex-1 rounded-[30px] border border-white/10 bg-white/5 px-4 py-4">
                 <div className="flex items-center gap-2 text-[var(--text-secondary)]">
                   <Search size={16} />
                   <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={t(language, 'search')} className="w-full bg-transparent text-sm text-[var(--text-primary)] outline-none placeholder:text-[var(--text-muted)]" />
                 </div>
                 <p className="mt-2 text-xs text-[var(--text-muted)]">{t(language, 'searchHint')}</p>
               </div>
-              <button type="button" onClick={() => setAdminOpen(true)} className={`hidden items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-3 text-sm text-[var(--text-secondary)] md:inline-flex ${hasAdminAccess ? '' : 'invisible'}`}>
+              <button type="button" onClick={() => setAdminOpen(true)} className={`premium-ring hidden items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-3 text-sm text-[var(--text-secondary)] md:inline-flex ${hasAdminAccess ? '' : 'invisible'}`}>
                 <Settings2 size={16} />
                 {t(language, 'hiddenAdmin')}
               </button>
@@ -295,35 +367,48 @@ function App() {
           <div>
             <p className="text-xs uppercase tracking-[0.28em] text-[var(--text-muted)]">{t(language, 'search')}</p>
             <h2 className="font-display text-3xl text-[var(--text-primary)]">
-              {filteredProducts.length} {t(language, 'results')}
+              {loadingStore ? '...' : filteredProducts.length} {t(language, 'results')}
             </h2>
           </div>
         </section>
 
         <section className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {loadingStore ? (
+            <div className="glass-panel glass-soft rounded-[30px] border border-white/15 px-5 py-8 text-center sm:col-span-2 xl:col-span-3">
+              <h3 className="font-display text-3xl text-[var(--text-primary)]">{t(language, 'loading')}</h3>
+            </div>
+          ) : null}
           {filteredProducts.map((product) => (
             <ProductCard key={product.id} product={product} language={language} locale={locale} onAddToCart={handleAddToCart} />
           ))}
         </section>
+
+        {!loadingStore && filteredProducts.length === 0 ? (
+          <section className="glass-panel glass-soft mt-4 rounded-[30px] border border-white/15 px-5 py-8 text-center">
+            <h3 className="font-display text-3xl text-[var(--text-primary)]">{t(language, 'noResultsTitle')}</h3>
+            <p className="mt-2 text-sm text-[var(--text-secondary)]">{t(language, 'noResultsText')}</p>
+          </section>
+        ) : null}
       </main>
 
-      <button type="button" onClick={() => setCartOpen(true)} className="glass-panel glass-soft fixed bottom-5 left-1/2 z-30 flex w-[calc(100%-1.5rem)] max-w-md -translate-x-1/2 items-center justify-between rounded-full border border-white/15 bg-[var(--surface-strong)] px-5 py-4 shadow-glow">
-        <span className="flex items-center gap-3">
-          <span className="rounded-full bg-gradient-to-r from-emerald-400 to-emerald-200 p-3 text-emerald-950">
-            <ShoppingBag size={18} />
+      {cartQuantity > 0 ? (
+        <button type="button" onClick={() => setCartOpen(true)} className="glass-panel glass-soft fixed bottom-4 left-1/2 z-30 flex w-[calc(100%-2rem)] max-w-[252px] -translate-x-1/2 items-center gap-3 rounded-[999px] border border-white/15 bg-[var(--surface-strong)] px-3 py-2.5 shadow-glow">
+          <span className="premium-ring flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-emerald-300 to-emerald-100 text-emerald-950">
+            <ShoppingBag size={16} />
           </span>
-          <span>
-            <span className="block text-sm font-semibold text-[var(--text-primary)]">{t(language, 'cart')}</span>
-            <span className="block text-xs text-[var(--text-secondary)]">{cartQuantity} item</span>
+          <span className="min-w-0 flex-1 text-left">
+            <span className="block text-[13px] font-semibold leading-none text-[var(--text-primary)]">{cartQuantity} {t(language, 'item')}</span>
+            <span className="mt-1 block text-xs text-[var(--text-secondary)]">{formatPrice(cartTotal, locale)}</span>
           </span>
-        </span>
-        <span className="text-right">
-          <span className="block text-xs text-[var(--text-secondary)]">{t(language, 'total')}</span>
-          <span className="block text-base font-bold text-[var(--text-primary)]">{formatPrice(cartTotal, locale)}</span>
-        </span>
-      </button>
+          <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">
+            {t(language, 'cart')}
+          </span>
+        </button>
+      ) : null}
 
-      <CartSheet cart={cart} products={products} language={language} locale={locale} open={cartOpen} onClose={() => setCartOpen(false)} onCheckout={() => setCheckoutOpen(true)} onQuantityChange={handleQuantityChange} />
+      {cartQuantity > 0 ? (
+        <CartSheet cart={cart} products={products} language={language} locale={locale} open={cartOpen} onClose={() => setCartOpen(false)} onCheckout={() => setCheckoutOpen(true)} onQuantityChange={handleQuantityChange} />
+      ) : null}
 
       <CheckoutModal
         cart={cart}
@@ -334,6 +419,7 @@ function App() {
         isTelegram={isTelegram}
         form={checkoutForm}
         requestingLocation={requestingLocation}
+        submitDisabled={!checkoutForm.phone.trim() || (checkoutForm.deliveryType === 'delivery' && !checkoutForm.location)}
         onClose={() => setCheckoutOpen(false)}
         onChange={(patch) => setCheckoutForm((current) => ({ ...current, ...patch }))}
         onRequestLocation={handleRequestLocation}
@@ -344,8 +430,10 @@ function App() {
         open={adminOpen}
         hasAccess={hasAdminAccess}
         language={language}
+        locale={locale}
         categories={categories}
         products={products}
+        orders={orders}
         draftProduct={draftProduct}
         draftCategory={draftCategory}
         editingId={editingId}
@@ -354,7 +442,15 @@ function App() {
         onCategoryDraftChange={setDraftCategory}
         onEditProduct={handleEditProduct}
         onSaveProduct={handleSaveProduct}
-        onDeleteProduct={(id) => setProducts((current) => current.filter((product) => product.id !== id))}
+        onDeleteProduct={async (id) => {
+          try {
+            await api.deleteProduct(id, user?.id, initData);
+            setProducts((current) => current.filter((product) => product.id !== id));
+          } catch (error) {
+            const message = error instanceof Error ? error.message : 'Delete failed.';
+            telegram?.showAlert?.(message) ?? window.alert(message);
+          }
+        }}
         onSaveCategory={handleSaveCategory}
         onDeleteCategory={handleDeleteCategory}
         onImageUpload={handleImageUpload}
